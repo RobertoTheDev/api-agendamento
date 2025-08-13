@@ -37,7 +37,7 @@ Antes de começar, verifique se você possui:
 **1. Clone o repositório:**
 
 ```bash
-git clone https://github.com/seuusuario/api-agendamentos.git
+git clone https://github.com/RobertoTheDev/api-agendamentos.git
 cd api-agendamentos
 ```
 **2. Instale as dependências via Composer:**
