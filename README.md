@@ -1,66 +1,150 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📅 API de Agendamentos - PHP + Laravel
+API para gerenciamento de agendamentos com operações CRUD, filtros e controle de acesso baseado em papéis (admin, gestor, professor).
+Desenvolvida com PHP 8.3.11 e Laravel Framework 11.42.1.
+O foco deste projeto é exclusivamente back-end, com toda a API já funcional e estruturada.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 📌 Ajustes e melhorias
+O projeto ainda está em desenvolvimento e as próximas atualizações serão voltadas para as seguintes tarefas:
 
-## About Laravel
+ - [x] CRUD completo de agendamentos
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+ - [x] Controle de acesso por função (role-based)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+ - [x] Filtros e listagem personalizada
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+ - [ ] Documentação Swagger/OpenAPI
 
-## Learning Laravel
+ - [ ] Testes automatizados
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+ - [ ] Integração com notificações (e-mail/SMS)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 💻 Pré-requisitos
+Antes de começar, verifique se você possui:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **PHP** 8.3.11
 
-## Laravel Sponsors
+- **Composer** 2.x
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **Laravel** 11.42.1
 
-### Premium Partners
+- Banco de dados **MySQL** ou **PostgreSQL** configurado
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+- **Laravel Sanctum** para autenticação via token
 
-## Contributing
+- Compatível com **Windows**, **Linux** e **macOS**
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🚀 Instalando API de Agendamentos
+**1. Clone o repositório:**
 
-## Code of Conduct
+```bash
+git clone https://github.com/seuusuario/api-agendamentos.git
+cd api-agendamentos
+```
+**2. Instale as dependências via Composer:**
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+composer install
+```
+**3. Configure o arquivo .env:**
 
-## Security Vulnerabilities
+```env
+APP_NAME=API_Agendamentos
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=nome_do_banco
+DB_USERNAME=usuario
+DB_PASSWORD=senha
+```
+**4. Gere a chave da aplicação:**
 
-## License
+```bash
+php artisan key:generate
+```
+**5. Execute as migrações:**
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan migrate
+```
+**6. Inicie o servidor local:**
+
+```bash
+php artisan serve
+```
+## 📡 Endpoints da API:
+**A API utiliza Laravel Sanctum para autenticação.
+Endpoints marcados com 🔒 exigem token no header:**
+
+```css
+
+Authorization: Bearer {TOKEN}
+🔑 Autenticação (/api/auth)
+Método	Endpoint	Auth	Descrição
+POST	/api/auth/register	❌	Registrar novo usuário
+POST	/api/auth/login	❌	Login e retorno do token
+POST	/api/auth/forgot-password	❌	Solicitar redefinição de senha
+POST	/api/auth/logout	🔒	Logout
+GET	/api/auth/user	🔒	Dados do usuário autenticado
+
+👤 Usuários (/api/users)
+Método	Endpoint	Auth	Descrição
+GET	/api/users	🔒	Listar todos os usuários
+POST	/api/users	🔒	Criar novo usuário
+GET	/api/users/{id}	🔒	Exibir usuário
+PUT	/api/users/{id}	🔒	Atualizar usuário
+DELETE	/api/users/{id}	🔒	Remover usuário
+
+📅 Agendamentos (/api/bookings)
+Método	Endpoint	Auth	Descrição
+GET	/api/bookings/my-bookings	🔒	Listar agendamentos do usuário logado
+POST	/api/bookings	🔒	Criar agendamento
+DELETE	/api/bookings/{id}	🔒	Cancelar agendamento
+POST	/api/bookings/friendly-match	🔒	Criar amistoso (somente 1ª e 3ª semana do mês)
+
+🛠 Gestão (/api/management) – Apenas Gestores
+Método	Endpoint	Auth	Descrição
+POST	/api/management/suspensions	🔒 (role:gestor)	Criar suspensão
+DELETE	/api/management/suspensions/{id}	🔒 (role:gestor)	Remover suspensão
+GET	/api/management/suspensions	🔒 (role:gestor)	Listar suspensões
+```
+## ☕ Exemplos curl: 
+
+### Login: 
+```bash
+
+curl -X POST http://localhost:8000/api/auth/login \
+-H "Content-Type: application/json" \
+-d '{"email":"usuario@example.com","password":"senha123"}'
+Listar 
+```
+### agendamentos do usuário: 
+```bash
+
+curl -X GET http://localhost:8000/api/bookings/my-bookings \
+-H "Authorization: Bearer SEU_TOKEN_AQUI"
+
+```
+### Criar amistoso: 
+```bash
+
+curl -X POST http://localhost:8000/api/bookings/friendly-match \
+-H "Authorization: Bearer SEU_TOKEN_AQUI" \
+-H "Content-Type: application/json" \
+-d '{"data":"2025-08-20 14:00:00","cliente_id":1}'
+```
+## 🛠 Tecnologias utilizadas: 
+- **PHP** 8.3.11
+
+- **Laravel** 11.42.1
+
+- **Laravel Sanctum**
+
+- **MySQL** ou **PostgreSQL**
+
+- **Composer**
+
