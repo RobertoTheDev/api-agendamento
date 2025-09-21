@@ -1,0 +1,57 @@
+<?php
+
+// app/Http/Controllers/Controller.php - Configuração principal do Swagger
+namespace App\Http\Controllers;
+
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Routing\Controller as BaseController;
+
+/**
+ * @OA\Info(
+ *     title="API de Agendamento",
+ *     version="1.0.0",
+ *     description="API para sistema de agendamento de quadras esportivas",
+ *     @OA\Contact(
+ *         email="admin@agendamento.com",
+ *         name="Suporte API"
+ *     )
+ * )
+ * 
+ * @OA\Server(
+ *     url=L5_SWAGGER_CONST_HOST,
+ *     description="Servidor de desenvolvimento"
+ * )
+ * 
+ * @OA\SecurityScheme(
+ *     securityScheme="bearerAuth",
+ *     type="http",
+ *     scheme="bearer",
+ *     bearerFormat="JWT",
+ *     description="Token de autenticação Bearer JWT"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Autenticação",
+ *     description="Endpoints de autenticação e autorização"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Usuários",
+ *     description="Gerenciamento de usuários"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Gestão",
+ *     description="Operações administrativas e de gestão"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Agendamentos",
+ *     description="Gerenciamento de agendamentos"
+ * )
+ */
+class Controller extends BaseController
+{
+    use AuthorizesRequests, ValidatesRequests;
+}

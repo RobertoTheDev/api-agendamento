@@ -1,5 +1,6 @@
 <?php
 use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\CheckRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,10 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'guest' => RedirectIfAuthenticated::class,
-            // Outros middlewares podem ser registrados aqui
+            'role' => CheckRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Configurações de exceções, se houver
+        //
     })
     ->create();

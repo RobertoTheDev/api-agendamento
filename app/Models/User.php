@@ -5,50 +5,77 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens; // Certifique-se de adicionar essa linha!
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    // Adiciona 'role' ao array $fillable
+    // Role constants
+    const ROLE_ADMIN = 'admin';
+    const ROLE_GESTOR = 'gestor';
+    const ROLE_PROFESSOR = 'professor';
+
     protected $fillable = [
         'name',
         'email',
         'password',
-        'profile_picture',
-        'role', // Incluindo o campo 'role'
+        'role',
+        'phone',
+        'is_suspended',
     ];
 
-    // Campos a serem ocultados
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    // Definições de conversões de tipos de dados
-    protected function casts(): array
-{
-    return [
+    protected $casts = [
         'email_verified_at' => 'datetime',
+        'is_suspended' => 'boolean',
+        'password' => 'hashed',
     ];
-}
 
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
 
-    // Relacionamento com Booking (agendamentos)
+    public function isGestor(): bool
+    {
+        return $this->role === self::ROLE_GESTOR;
+    }
+
+    public function isProfessor(): bool
+    {
+        return $this->role === self::ROLE_PROFESSOR;
+    }
+
+    public function hasActiveSuspension(): bool
+    {
+        return $this->suspensions()
+                    ->where('is_active', true)
+                    ->where('start_date', '<=', now())
+                    ->where('end_date', '>=', now())
+                    ->exists();
+    }
+
+    public function activeSuspension()
+    {
+        return $this->suspensions()
+                    ->where('is_active', true)
+                    ->where('start_date', '<=', now())
+                    ->where('end_date', '>=', now())
+                    ->first();
+    }
+
+    public function suspensions()
+    {
+        return $this->hasMany(Suspension::class);
+    }
+
     public function bookings()
     {
         return $this->hasMany(Booking::class);
-    }
-
-    // Validando o valor de 'role' antes de salvar no banco
-    public static function booted()
-    {
-        static::saving(function ($user) {
-            // Garantir que o role seja um valor válido
-            if (!in_array($user->role, ['professor', 'gestor', 'admin'])) {
-                throw new \Exception("Tipo de usuário inválido.");
-            }
-        });
     }
 }

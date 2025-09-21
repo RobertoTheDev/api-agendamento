@@ -1,30 +1,35 @@
 <?php
 
+// ARQUIVO: database/migrations/2025_02_13_191941_create_bookings_table.php
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users'); // Relacionamento com a tabela users
-            $table->string('location'); // Local reservado (ex: quadra, laboratório)
-            $table->integer('lesson_period'); // Representa a aula (de 1 a 9)
-            $table->timestamp('start_time'); // Hora de início do agendamento
-            $table->timestamp('end_time'); // Hora de término do agendamento
-            $table->timestamps(); // Data de criação e atualização do agendamento
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('location');
+            $table->integer('lesson_period');
+            $table->dateTime('start_time');
+            $table->dateTime('end_time');
+            $table->enum('booking_type', ['regular', 'friendly_match'])->default('regular');
+            $table->enum('status', ['scheduled', 'completed', 'cancelled'])->default('scheduled');
+            $table->boolean('is_evaluation_period')->default(false);
+            $table->text('notes')->nullable();
+            $table->timestamps();
+            
+            // Índices para performance
+            $table->index(['user_id', 'status', 'start_time']);
+            $table->index(['location', 'lesson_period', 'start_time']);
+            $table->index(['booking_type', 'start_time']);
+            $table->index(['status', 'start_time']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('bookings');

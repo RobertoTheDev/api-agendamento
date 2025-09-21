@@ -3,27 +3,40 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Booking;
+use App\Models\Suspension;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // Criando um gestor
-        User::factory()->create([
-            'name' => 'Gestor Principal',
-            'email' => 'gestor@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'gestor',
+        // Criar usuários padrão
+        $admin = User::create([
+            'name' => 'Administrador',
+            'email' => 'admin@booking.com',
+            'password' => Hash::make('password123'),
+            'role' => 'admin',
+            'phone' => '(11) 99999-0001',
         ]);
 
-        // Criando alguns professores
-        User::factory(5)->create([
-            'role' => 'professor',
+        $gestor = User::create([
+            'name' => 'Gestor Principal',
+            'email' => 'gestor@booking.com',
+            'password' => Hash::make('password123'),
+            'role' => 'gestor',
+            'phone' => '(11) 99999-0002',
         ]);
+
+        $professor1 = User::create([
+            'name' => 'Professor João',
+            'email' => 'professor@booking.com',
+            'password' => Hash::make('password123'),
+            'role' => 'professor',
+            'phone' => '(11) 99999-0003',
+        ]);
+
+        $this->command->info('Database seeded successfully!');
     }
 }

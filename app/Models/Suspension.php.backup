@@ -1,0 +1,55 @@
+<?php
+
+// app/Models/Suspension.php - Adicionar anotações Swagger
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * @OA\Schema(
+ *     schema="Suspension",
+ *     type="object",
+ *     title="Suspension",
+ *     description="Modelo de suspensão",
+ *     required={"id", "location", "reason", "start_date", "end_date", "is_evaluation_period"},
+ *     @OA\Property(property="id", type="integer", format="int64", example=1, description="ID único da suspensão"),
+ *     @OA\Property(property="user_id", type="integer", format="int64", nullable=true, example=1, description="ID do usuário suspenso (opcional)"),
+ *     @OA\Property(property="location", type="string", example="Quadra 1", description="Local da suspensão"),
+ *     @OA\Property(property="reason", type="string", example="Manutenção programada", description="Motivo da suspensão"),
+ *     @OA\Property(property="start_date", type="string", format="date-time", example="2024-12-01T00:00:00Z", description="Data de início"),
+ *     @OA\Property(property="end_date", type="string", format="date-time", example="2024-12-15T23:59:59Z", description="Data de fim"),
+ *     @OA\Property(property="is_evaluation_period", type="boolean", example=false, description="Se aplica ao período de avaliação"),
+ *     @OA\Property(property="is_active", type="boolean", example=true, description="Se a suspensão está ativa"),
+ *     @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-01T10:00:00Z", description="Data de criação"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-01T10:00:00Z", description="Data de atualização"),
+ *     @OA\Property(property="user", ref="#/components/schemas/User", description="Dados do usuário suspenso")
+ * )
+ */
+class Suspension extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'location',
+        'reason',
+        'start_date',
+        'end_date',
+        'is_evaluation_period',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+        'is_evaluation_period' => 'boolean',
+        'is_active' => 'boolean',
+    ];
+
+    // Relationships
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}

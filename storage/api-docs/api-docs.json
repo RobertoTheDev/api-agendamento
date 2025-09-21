@@ -1,0 +1,1351 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API de Agendamento",
+        "description": "API para sistema de agendamento",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://my-default-host.com",
+            "description": "Servidor de desenvolvimento"
+        }
+    ],
+    "paths": {
+        "/api/auth/register": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Registrar novo usuário",
+                "description": "Cria um novo usuário no sistema",
+                "operationId": "d764dd091cc4494ae0baf360b03319f3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation",
+                                    "role"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "João Silva"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "joao@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "minLength": 8,
+                                        "example": "senha123456"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "senha123456"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "professor",
+                                            "gestor",
+                                            "admin"
+                                        ],
+                                        "example": "professor"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "(11) 99999-9999"
+                                    },
+                                    "profile_picture": {
+                                        "type": "string",
+                                        "example": "https://example.com/avatar.jpg"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuário criado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Usuário registrado com sucesso."
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        },
+                                        "redirect_url": {
+                                            "type": "string",
+                                            "example": "/dashboard/professor"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Dados de validação inválidos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Dados de validação inválidos"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Fazer login",
+                "description": "Autentica um usuário e retorna o token JWT",
+                "operationId": "8dcb70df1020986038d098cc08d05dae",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "professor@booking.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "professor",
+                                            "gestor"
+                                        ],
+                                        "example": "professor"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login realizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login realizado com sucesso."
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|abcdef..."
+                                        },
+                                        "redirect_url": {
+                                            "type": "string",
+                                            "example": "/dashboard/professor"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Credenciais inválidas ou usuário suspenso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erro no login."
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Credenciais inválidas."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Fazer logout",
+                "description": "Invalida o token JWT do usuário autenticado",
+                "operationId": "69281b12abb272c76871f19cb17ca563",
+                "responses": {
+                    "200": {
+                        "description": "Logout realizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logout realizado com sucesso."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/user": {
+            "get": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Obter dados do usuário autenticado",
+                "description": "Retorna os dados do usuário autenticado",
+                "operationId": "e23e5f9b32cba7953a224624a2a16544",
+                "responses": {
+                    "200": {
+                        "description": "Dados do usuário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/bookings/my-bookings": {
+            "get": {
+                "tags": [
+                    "Agendamentos"
+                ],
+                "summary": "Listar meus agendamentos",
+                "description": "Retorna todos os agendamentos do usuário autenticado",
+                "operationId": "8ec94cc909f472c4c594506eed1c3e78",
+                "responses": {
+                    "200": {
+                        "description": "Lista de agendamentos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "bookings": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Booking"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/bookings": {
+            "post": {
+                "tags": [
+                    "Agendamentos"
+                ],
+                "summary": "Criar agendamento",
+                "description": "Cria um novo agendamento regular",
+                "operationId": "e33fa5a6507581f9b1e0d710a9a130d1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "location",
+                                    "lesson_period",
+                                    "start_time",
+                                    "end_time",
+                                    "is_evaluation_period"
+                                ],
+                                "properties": {
+                                    "location": {
+                                        "type": "string",
+                                        "example": "Quadra 1"
+                                    },
+                                    "lesson_period": {
+                                        "type": "integer",
+                                        "maximum": 9,
+                                        "minimum": 1,
+                                        "example": 3
+                                    },
+                                    "start_time": {
+                                        "type": "string",
+                                        "format": "datetime",
+                                        "example": "2024-12-25 14:00:00"
+                                    },
+                                    "end_time": {
+                                        "type": "string",
+                                        "format": "datetime",
+                                        "example": "2024-12-25 15:00:00"
+                                    },
+                                    "is_evaluation_period": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Aula de tênis"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Agendamento criado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Agendamento criado com sucesso!"
+                                        },
+                                        "booking": {
+                                            "$ref": "#/components/schemas/Booking"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Dados inválidos ou horário não disponível"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/bookings/friendly-match": {
+            "post": {
+                "tags": [
+                    "Agendamentos"
+                ],
+                "summary": "Criar amistoso",
+                "description": "Cria um agendamento para amistoso (apenas 1ª e 3ª semana do mês)",
+                "operationId": "f50f514abd76784640b3290ce8dc9660",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "location",
+                                    "lesson_period",
+                                    "start_time",
+                                    "end_time",
+                                    "is_evaluation_period"
+                                ],
+                                "properties": {
+                                    "location": {
+                                        "type": "string",
+                                        "example": "Quadra 1"
+                                    },
+                                    "lesson_period": {
+                                        "type": "integer",
+                                        "maximum": 9,
+                                        "minimum": 1,
+                                        "example": 3
+                                    },
+                                    "start_time": {
+                                        "type": "string",
+                                        "format": "datetime",
+                                        "example": "2024-12-07 16:00:00"
+                                    },
+                                    "end_time": {
+                                        "type": "string",
+                                        "format": "datetime",
+                                        "example": "2024-12-07 17:00:00"
+                                    },
+                                    "is_evaluation_period": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Amistoso de sábado"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Amistoso agendado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Amistoso agendado com sucesso!"
+                                        },
+                                        "booking": {
+                                            "$ref": "#/components/schemas/Booking"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Data inválida - amistosos só na 1ª e 3ª semana"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/bookings/{booking}": {
+            "delete": {
+                "tags": [
+                    "Agendamentos"
+                ],
+                "summary": "Cancelar agendamento",
+                "description": "Cancela um agendamento específico",
+                "operationId": "69e442ca715abf5036d9e4c2b22af630",
+                "parameters": [
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "description": "ID do agendamento",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Agendamento cancelado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Agendamento cancelado com sucesso."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão para cancelar este agendamento"
+                    },
+                    "400": {
+                        "description": "Não é possível cancelar este agendamento"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/management/suspensions": {
+            "get": {
+                "tags": [
+                    "Gestão"
+                ],
+                "summary": "Listar suspensões",
+                "description": "Lista todas as suspensões com paginação (apenas gestores/admins)",
+                "operationId": "listSuspensions",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número da página",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada de suspensões",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Suspension"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "last_page": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "per_page": {
+                                            "type": "integer",
+                                            "example": 20
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 100
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acesso negado - apenas gestores/admins",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Acesso negado."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Gestão"
+                ],
+                "summary": "Criar suspensão",
+                "description": "Cria uma nova suspensão de local ou usuário (apenas gestores/admins)",
+                "operationId": "createSuspension",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "location",
+                                    "reason",
+                                    "start_date",
+                                    "end_date",
+                                    "is_evaluation_period"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "description": "ID do usuário (opcional)",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "example": "Quadra 1"
+                                    },
+                                    "reason": {
+                                        "type": "string",
+                                        "example": "Manutenção programada"
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "datetime",
+                                        "example": "2024-12-01 00:00:00"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "datetime",
+                                        "example": "2024-12-15 23:59:59"
+                                    },
+                                    "is_evaluation_period": {
+                                        "description": "Se aplica ao período de avaliação",
+                                        "type": "boolean",
+                                        "example": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Suspensão criada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Suspensão criada com sucesso."
+                                        },
+                                        "suspension": {
+                                            "$ref": "#/components/schemas/Suspension"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    },
+                    "422": {
+                        "description": "Dados de validação inválidos"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/management/suspensions/{id}": {
+            "get": {
+                "tags": [
+                    "Gestão"
+                ],
+                "summary": "Exibir suspensão",
+                "description": "Mostra uma suspensão específica (apenas gestores/admins)",
+                "operationId": "showSuspension",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID da suspensão",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dados da suspensão",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "suspension": {
+                                            "$ref": "#/components/schemas/Suspension"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Suspensão não encontrada"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Gestão"
+                ],
+                "summary": "Remover suspensão",
+                "description": "Remove uma suspensão e reativa o usuário se não houver outras suspensões ativas",
+                "operationId": "deleteSuspension",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID da suspensão",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Suspensão removida com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Suspensão removida com sucesso."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Suspensão não encontrada"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users": {
+            "get": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Listar usuários",
+                "description": "Lista todos os usuários com filtros opcionais (apenas gestores/admins)",
+                "operationId": "listUsers",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "query",
+                        "description": "Filtrar por role",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "professor",
+                                "gestor",
+                                "admin"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Buscar por nome ou email",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número da página",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada de usuários",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/User"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "last_page": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "per_page": {
+                                            "type": "integer",
+                                            "example": 20
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 100
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Criar usuário",
+                "description": "Cria um novo usuário (apenas gestores/admins)",
+                "operationId": "createUser",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "role"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Maria Silva"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "maria@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "minLength": 8,
+                                        "example": "senha123456"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "professor",
+                                            "gestor",
+                                            "admin"
+                                        ],
+                                        "example": "professor"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "(11) 88888-8888"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuário criado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Usuário criado com sucesso."
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Dados de validação inválidos"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{user}": {
+            "get": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Exibir usuário",
+                "description": "Mostra um usuário específico com seus agendamentos recentes",
+                "operationId": "showUser",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "ID do usuário",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dados do usuário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Usuário não encontrado"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Atualizar usuário",
+                "description": "Atualiza os dados de um usuário",
+                "operationId": "updateUser",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "ID do usuário",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Maria Silva"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "maria@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "minLength": 8,
+                                        "example": "novasenha123"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "professor",
+                                            "gestor",
+                                            "admin"
+                                        ],
+                                        "example": "gestor"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "(11) 77777-7777"
+                                    },
+                                    "is_suspended": {
+                                        "type": "boolean",
+                                        "example": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Usuário atualizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Usuário atualizado com sucesso."
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Dados de validação inválidos"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Remover usuário",
+                "description": "Remove um usuário do sistema (não pode ter agendamentos ativos)",
+                "operationId": "deleteUser",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "ID do usuário",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuário removido com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Usuário removido com sucesso."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Usuário tem agendamentos ativos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Não é possível remover usuário com agendamentos ativos."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "User": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "João Silva"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "joao@example.com"
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "professor"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "(11) 99999-9999"
+                    },
+                    "is_suspended": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Suspension": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "location": {
+                        "type": "string",
+                        "example": "Quadra 1"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "example": "Manutenção"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "is_evaluation_period": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Booking": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "location": {
+                        "type": "string",
+                        "example": "Quadra 1"
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "scheduled"
+                    },
+                    "notes": {
+                        "type": "string",
+                        "example": "Aula de tênis"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Autenticação",
+            "description": "Autenticação"
+        },
+        {
+            "name": "Agendamentos",
+            "description": "Agendamentos"
+        },
+        {
+            "name": "Gestão",
+            "description": "Gestão"
+        },
+        {
+            "name": "Usuários",
+            "description": "Usuários"
+        }
+    ]
+}

@@ -7,41 +7,65 @@ use App\Http\Controllers\ManagementController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
+
 // Rotas de autenticação
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']); // Registrar usuário
-    Route::post('/login', [AuthController::class, 'login']); // Login
-    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']); // Redefinir senha
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
 
-    // Logout e obtenção de dados do usuário autenticado
-    Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']); // Logout
-    Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-        return response()->json($request->user()); // Retorna dados do usuário autenticado
+    // Rotas protegidas por autenticação
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::get('user', [AuthController::class, 'user']);
     });
 });
 
-// Rotas para usuários (professores e gestores)
-Route::middleware('auth:sanctum')->prefix('users')->group(function () {
-    Route::get('/', [UserController::class, 'index']); // Listar todos os usuários
-    Route::post('/', [UserController::class, 'store']); // Criar um novo usuário
-    Route::get('{user}', [UserController::class, 'show']); // Exibir um usuário específico
-    Route::put('{user}', [UserController::class, 'update']); // Atualizar um usuário
-    Route::delete('{user}', [UserController::class, 'destroy']); // Excluir um usuário
+// Rotas protegidas por autenticação
+Route::middleware('auth:sanctum')->group(function () {
+    
+    // Rotas para usuários (apenas gestores e admins)
+    Route::middleware('\App\Http\Middleware\CheckRole:gestor,admin')->prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index']);
+        Route::post('/', [UserController::class, 'store']);
+        Route::get('{user}', [UserController::class, 'show']);
+        Route::put('{user}', [UserController::class, 'update']);
+        Route::delete('{user}', [UserController::class, 'destroy']);
+    });
+
+    // Rotas para agendamentos
+    Route::prefix('bookings')->group(function () {
+        // Rotas acessíveis por todos os usuários autenticados
+        Route::get('my-bookings', [BookingController::class, 'myBookings']);
+        Route::post('/', [BookingController::class, 'store']);
+        Route::delete('{booking}', [BookingController::class, 'destroy']);
+        Route::post('friendly-match', [BookingController::class, 'storeFriendlyMatch']);
+        
+        // Rotas apenas para gestores
+        Route::middleware('\App\Http\Middleware\CheckRole:gestor,admin')->group(function () {
+            Route::get('/', [BookingController::class, 'index']);
+            Route::get('user/{userId}', [BookingController::class, 'getUserBookings']);
+        });
+    });
+
+    // Rotas para gestão (apenas gestores e admins)
+    Route::middleware('\App\Http\Middleware\CheckRole:gestor,admin')->prefix('management')->group(function () {
+        Route::get('suspensions', [ManagementController::class, 'listSuspensions']);
+        Route::post('suspensions', [ManagementController::class, 'createSuspension']);
+        Route::get('suspensions/{id}', [ManagementController::class, 'showSuspension']);
+        Route::put('suspensions/{id}', [ManagementController::class, 'updateSuspension']);
+        Route::delete('suspensions/{id}', [ManagementController::class, 'deleteSuspension']);
+    });
 });
 
-// Rotas para agendamentos (bookings)
-Route::middleware('auth:sanctum')->prefix('bookings')->group(function () {
-    Route::get('/my-bookings', [BookingController::class, 'myBookings']); // Listar os próprios agendamentos
-    Route::post('/', [BookingController::class, 'store']); // Criar um novo agendamento
-    Route::delete('{booking}', [BookingController::class, 'destroy']); // Excluir um agendamento
-
-    // Rota para amistosos (somente 1ª e 3ª semana do mês)
-    Route::post('/friendly-match', [BookingController::class, 'storeFriendlyMatch']);
-});
-
-// Rotas para a gestão (Management) - Apenas gestores podem acessar
-Route::middleware(['auth:sanctum', 'role:gestor'])->prefix('management')->group(function () {
-    Route::post('/suspensions', [ManagementController::class, 'createSuspension']); // Criar período de suspensão
-    Route::delete('/suspensions/{id}', [ManagementController::class, 'deleteSuspension']); // Remover suspensão
-    Route::get('/suspensions', [ManagementController::class, 'listSuspensions']); // Listar suspensões
+// Rota de fallback para APIs não encontradas
+Route::fallback(function () {
+    return response()->json([
+        'message' => 'Endpoint não encontrado. Verifique a URL e o método HTTP.',
+    ], 404);
 });

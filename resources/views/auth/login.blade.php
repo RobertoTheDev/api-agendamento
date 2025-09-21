@@ -60,93 +60,122 @@
       try {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
-        const user = userData ? JSON.parse(userData) : null;
-        const currentPath = window.location.pathname; // Obtém a URL atual
+        const currentPath = window.location.pathname;
 
         console.log('🚀 Página carregada. URL atual:', currentPath);
-        console.log('🔍 Token encontrado:', token);
-        console.log('👤 Dados do usuário:', user.role);
+        console.log('🔍 Token encontrado:', !!token);
         
-        // Verifica se o usuário já está logado e não está na página de login
-        if (token && user.role && currentPath !== '/login') {
-          let redirectURL = user.role === 'professor' ? '/dashboard/professor' : '/dashboard/gestor';
-
-          if (currentPath == redirectURL) {
-            console.log('🔄 Redirecionando para:', redirectURL);
-            window.location.href = "http://localhost:8000/${redirectURL}";
-          }
+        // Se estamos na página de login e o usuário já está logado, redirecionar
+        if (token && userData && currentPath === '/login') {
+          const user = JSON.parse(userData);
+          console.log('👤 Usuário já logado:', user.role);
+          
+          const redirectURL = user.role === 'professor' ? '/dashboard/professor' : '/dashboard/gestor';
+          console.log('🔄 Redirecionando usuário logado para:', redirectURL);
+          window.location.href = redirectURL;
+          return; // Sair da função para evitar execução adicional
         }
+
+        // Se não estamos na página de login e não há token, redirecionar para login
+        if (!token && currentPath !== '/login' && currentPath !== '/register') {
+          console.log('🔄 Usuário não logado, redirecionando para login');
+          window.location.href = '/login';
+        }
+        
       } catch (error) {
         console.error('⚠ Erro ao processar dados do usuário:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        // Só redirecionar se não estivermos já na página de login
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     });
 
     function togglePassword() {
-      let passwordInput = document.getElementById('password');
+      const passwordInput = document.getElementById('password');
       passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
     }
 
     document.getElementById('loginForm').addEventListener('submit', function(event) {
       event.preventDefault();
 
-      let email = document.getElementById('email').value.trim();
-      let password = document.getElementById('password').value.trim();
-      let role = document.getElementById('role').value;
-      let errorMessage = document.getElementById('error-message');
-      let successMessage = document.getElementById('success-message');
-      let submitButton = event.target.querySelector('button[type="submit"]');
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const role = document.getElementById('role').value;
+      const errorMessage = document.getElementById('error-message');
+      const successMessage = document.getElementById('success-message');
+      const submitButton = event.target.querySelector('button[type="submit"]');
 
-      // Resetando mensagens de erro e sucesso
+      // Resetando mensagens
       errorMessage.classList.add('hidden');
       successMessage.classList.add('hidden');
       submitButton.disabled = true;
       submitButton.textContent = 'Entrando...';
 
-      console.log('🔑 Tentando login com:', { email, password, role });
+      console.log('🔑 Tentando login com:', { email, role });
 
-      axios.post('/api/auth/login', { email, password, role }, { withCredentials: true })
-        .then(response => {
-          console.log('✅ Resposta da API:', response.data);
+      // Configurar axios com base URL da API
+      axios.post('http://127.0.0.1:8000/api/auth/login', { 
+        email, 
+        password, 
+        role 
+      })
+      .then(response => {
+        console.log('✅ Resposta da API:', response.data);
 
-          if (!response.data.user || !response.data.user.role) {
-            throw new Error('❌ Erro: Dados do usuário estão incompletos.');
-          }
+        if (!response.data.user || !response.data.user.role) {
+          throw new Error('Dados do usuário estão incompletos.');
+        }
 
-          // Salva os dados no localStorage
-          localStorage.setItem('token', response.data.token);
-          localStorage.setItem('user', JSON.stringify(response.data.user));
+        // Salvar dados no localStorage
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
 
-          // Define a URL correta
-          let redirectURL = response.data.user.role === 'professor' ? '/dashboard/professor' : '/dashboard/gestor';
+        // Configurar header de autenticação para futuras requisições
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
 
-          console.log('🔄 Redirecionando para:', redirectURL);
+        // Definir URL de redirecionamento
+        const redirectURL = response.data.user.role === 'professor' ? '/dashboard/professor' : '/dashboard/gestor';
 
-          // Exibe mensagem de sucesso antes de redirecionar
-          successMessage.textContent = 'Login realizado com sucesso!';
-          successMessage.classList.remove('hidden');
+        console.log('🔄 Redirecionando para:', redirectURL);
 
-          setTimeout(() => {
-            window.location.href = redirectURL;
-          }, 1000);
-        })
-        .catch(error => {
-          console.error('⚠ Erro ao fazer login:', error);
+        // Exibir mensagem de sucesso
+        successMessage.textContent = 'Login realizado com sucesso!';
+        successMessage.classList.remove('hidden');
 
-          let errorMsg = 'Erro: Verifique suas credenciais!';
-          if (error.response?.data?.message) {
+        // Redirecionar após delay
+        setTimeout(() => {
+          window.location.href = redirectURL;
+        }, 1000);
+      })
+      .catch(error => {
+        console.error('⚠ Erro ao fazer login:', error);
+
+        let errorMsg = 'Erro: Verifique suas credenciais!';
+        
+        if (error.response) {
+          // Erro da API
+          if (error.response.data && error.response.data.message) {
             errorMsg = error.response.data.message;
+          } else if (error.response.status === 401) {
+            errorMsg = 'Email, senha ou tipo de usuário incorretos.';
+          } else if (error.response.status === 422) {
+            errorMsg = 'Dados de validação inválidos.';
           }
+        } else if (error.request) {
+          // Erro de rede
+          errorMsg = 'Erro de conexão. Verifique sua internet ou se o servidor está rodando.';
+        }
 
-          errorMessage.textContent = errorMsg;
-          errorMessage.classList.remove('hidden');
+        errorMessage.textContent = errorMsg;
+        errorMessage.classList.remove('hidden');
 
-          // Reativar botão de login
-          submitButton.disabled = false;
-          submitButton.textContent = 'Entrar';
-        });
+        // Reativar botão
+        submitButton.disabled = false;
+        submitButton.textContent = 'Entrar';
+      });
     });
   </script>
 </body>
